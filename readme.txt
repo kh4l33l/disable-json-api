@@ -3,8 +3,8 @@ Contributors: dmchale, tangrufus
 Tags: admin, api, json, REST, rest-api, disable
 Requires at least: 4.9
 Requires PHP: 5.6
-Tested up to: 6.3
-Stable tag: 1.8
+Tested up to: 7.0.2
+Stable tag: 1.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,12 @@ This plugin is ONLY meant to disable endpoints accessible via the core REST API 
 3. The Settings page lets you selectively whitelist endpoints registered with the REST API, on a per-user-role basis.
 
 == Changelog ==
+
+= 1.9.0 =
+* Tested up to WP v7.0.2
+* Hardened settings defaults for fresh installs and upgraded option data.
+* Improved route detection for modern REST requests.
+* Sanitized settings role/route input and escaped admin settings output.
 
 = 1.8 =
 * Tested up to WP v6.3

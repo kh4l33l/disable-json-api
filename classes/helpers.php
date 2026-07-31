@@ -44,7 +44,7 @@ class DRA_Helpers {
 		// Loop through ALL routes, find out if any exist in the previously-existing rules. If so, they SHOULD be allowed. Default for everyone is false
 		foreach ( $all_routes as $route ) {
 			$new_value = false;
-			if ( ! empty( $allowed_routes ) && in_array( $route, $allowed_routes ) ) {
+			if ( ! empty( $allowed_routes ) && in_array( $route, $allowed_routes, true ) ) {
 				$new_value = true;
 			}
 			$new_rules[ esc_html( $route ) ] = $new_value;

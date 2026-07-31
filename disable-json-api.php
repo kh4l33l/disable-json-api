@@ -3,9 +3,10 @@
  * Plugin Name: Disable REST API
  * Plugin URI: http://www.binarytemplar.com/disable-json-api
  * Description: Disable the use of the REST API on your website to anonymous users. You can optionally enable select endpoints if you wish. Now with support for User Roles!
- * Version: 1.9-alpha
+ * Version: 1.9.0
  * Requires at least: 4.9
  * Requires PHP: 5.6
+ * Tested up to: 7.0.2
  * Author: Dave McHale
  * Author URI: http://www.binarytemplar.com
  * License: GPL2+
@@ -14,7 +15,7 @@
  * Domain Path: /languages
  */
 
-const DISABLE_REST_API_PLUGIN_VER = '1.9-alpha';
+const DISABLE_REST_API_PLUGIN_VER = '1.9.0';
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {

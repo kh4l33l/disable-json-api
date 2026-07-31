@@ -18,6 +18,8 @@ class DRA_Admin {
 		foreach ( $all_routes as $route ) {
 			$is_route_namespace = in_array( ltrim( $route, "/" ), $all_namespaces );
 			$checkedProp        = self::get_route_checked_prop( $route, $allowed_routes );
+			$route_attr         = esc_attr( $route );
+			$route_js           = esc_js( $route );
 
 			if ( $is_route_namespace || "/" == $route ) {
 				$current_namespace = $route;
@@ -26,14 +28,14 @@ class DRA_Admin {
 				}
 
 				$route_for_display = ( "/" == $route ) ? "/ <em>" . esc_html__( "REST API ROOT", "disable-json-api" ) . "</em>" : esc_html( $route );
-				echo "<label class='switch'><input name='rest_routes[]' value='$route' type='checkbox' id='dra_namespace_$loopCounter' onclick='dra_namespace_click(\"$route\", $loopCounter)' $checkedProp><span class='slider'></span></label><h2><label for='dra_namespace_$loopCounter'>&nbsp;$route_for_display</label></h2><ul>";
+				echo "<label class='switch'><input name='rest_routes[]' value='$route_attr' type='checkbox' id='dra_namespace_$loopCounter' onclick='dra_namespace_click(\"$route_js\", $loopCounter)' $checkedProp><span class='slider'></span></label><h2><label for='dra_namespace_$loopCounter'>&nbsp;$route_for_display</label></h2><ul>";
 
 				if ( "/" == $route ) {
-					echo "<li>" . sprintf( esc_html__( "On this website, the REST API root is %s", "disable-json-api" ), "<strong>" . rest_url() . "</strong>" ) . "</li>";
+					echo "<li>" . sprintf( esc_html__( "On this website, the REST API root is %s", "disable-json-api" ), "<strong>" . esc_url( rest_url() ) . "</strong>" ) . "</li>";
 				}
 
 			} else {
-				echo "<li><label class='switch'><input name='rest_routes[]' id='dra_namespace_$loopCounter' value='$route' type='checkbox' data-namespace='$current_namespace' $checkedProp><span class='slider'></span></label><label for='dra_namespace_$loopCounter'>&nbsp;" . esc_html( $route ) . "</label></li>";
+				echo "<li><label class='switch'><input name='rest_routes[]' id='dra_namespace_$loopCounter' value='$route_attr' type='checkbox' data-namespace='" . esc_attr( $current_namespace ) . "' $checkedProp><span class='slider'></span></label><label for='dra_namespace_$loopCounter'>&nbsp;" . esc_html( $route ) . "</label></li>";
 			}
 
 			$loopCounter ++;
@@ -67,7 +69,7 @@ class DRA_Admin {
 		$default_allow_true_checked  = '';
 		$default_allow_false_checked = '';
 
-		$role_default_allow = DRA_Helpers::get_default_allow_for_role( $role );
+		$role_default_allow = call_user_func( array( 'DRA_Helpers', 'get_default_allow_for_role' ), $role );
 		if ( $role_default_allow ) {
 			$default_allow_true_checked = ' checked="checked"';
 		} else {
@@ -75,7 +77,7 @@ class DRA_Admin {
 		}
 
 		/* translators: name of user role */
-		echo sprintf( '<h2>%s</h2>', sprintf( esc_html__( 'Manage Rules for %s Users', 'disable-json-api' ), DRA_Helpers::get_role_name( $role ) ) );
+		echo sprintf( '<h2>%s</h2>', sprintf( esc_html__( 'Manage Rules for %s Users', 'disable-json-api' ), esc_html( call_user_func( array( 'DRA_Helpers', 'get_role_name' ), $role ) ) ) );
 		?>
         <p style="font-style:italic;">
 			<?php

@@ -13,7 +13,10 @@
         <?php esc_html_e( "Rules for", "disable-json-api" ); ?>: <select name="role" id="dra-role">
             <option value="none"><?php esc_html_e( "Unauthenticated Users", "disable-json-api" ); ?></option>
 			<?php
-			$role = ( isset( $_GET['role'] ) ) ? $_GET['role'] : 'none';
+			$role = ( isset( $_GET['role'] ) ) ? sanitize_key( wp_unslash( $_GET['role'] ) ) : 'none';
+			if ( ! DRA_Helpers::is_valid_role( $role ) ) {
+				$role = 'none';
+			}
 			wp_dropdown_roles( $role );
 			?>
         </select>

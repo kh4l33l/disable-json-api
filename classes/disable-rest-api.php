@@ -76,6 +76,10 @@ class Disable_REST_API {
 			$GLOBALS['wp']->query_vars['rest_route'] :
 			'';
 
+		if ( '' === $rest_route && isset( $_GET['rest_route'] ) ) {
+			$rest_route = wp_unslash( $_GET['rest_route'] );
+		}
+
 		return ( empty( $rest_route ) || '/' == $rest_route ) ?
 			$rest_route :
 			untrailingslashit( $rest_route );
@@ -91,7 +95,7 @@ class Disable_REST_API {
 	 */
 	private function is_route_allowed( $currentRoute ) {
 
-		$current_options    = get_option( 'disable_rest_api_options', array() );
+		$current_options    = $this->get_options();
 		$current_user_roles = $this->get_current_user_roles();
 
 		// Loop through user roles belonging to the current user
@@ -99,9 +103,16 @@ class Disable_REST_API {
 
 			// If we have a definition for the current user's role
 			if ( isset( $current_options['roles'][ $role ] ) ) {
+				$role_options = wp_parse_args(
+					$current_options['roles'][ $role ],
+					array(
+						'default_allow' => 'none' === $role ? false : true,
+						'allow_list'    => array(),
+					)
+				);
 
 				// If any role for this user is set to Allow Full REST API Access, return true automatically
-				if ( true === $current_options['roles'][ $role ]['default_allow'] ) {
+				if ( true === (bool) $role_options['default_allow'] ) {
 					return true;
 				}
 
@@ -129,8 +140,31 @@ class Disable_REST_API {
 		// Most likely, we're here because the request is from a user role we don't have a definition for.
 		// Return the plugin-global setting for what should be done in the case of something we don't know what to do with.
 		// As of this writing in v1.6, this is "allow" by default since we want new User Roles to be ALLOWED access to everything until an admin chooses to take that right away.
-		return $current_options['default_allow'];
+		return (bool) $current_options['default_allow'];
 
+	}
+
+
+	/**
+	 * Get plugin options with a known shape.
+	 *
+	 * @return array
+	 */
+	private function get_options() {
+		$current_options = get_option( 'disable_rest_api_options', array() );
+
+		if ( ! is_array( $current_options ) ) {
+			$current_options = array();
+		}
+
+		return wp_parse_args(
+			$current_options,
+			array(
+				'version'       => DISABLE_REST_API_PLUGIN_VER,
+				'default_allow' => true,
+				'roles'         => array(),
+			)
+		);
 	}
 
 
@@ -164,7 +198,7 @@ class Disable_REST_API {
 	public function settings_link( $links ) {
 
 		$settings_url  = menu_page_url( self::MENU_SLUG, false );
-		$settings_link = "<a href='$settings_url'>" . esc_html__( "Settings", "disable-json-api" ) . "</a>";
+		$settings_link = '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( "Settings", "disable-json-api" ) . '</a>';
 		array_unshift( $links, $settings_link );
 
 		return $links;
@@ -213,7 +247,7 @@ class Disable_REST_API {
 		}
 
 		// Confirm a valid role has been passed
-		$role = ( isset( $_POST['role'] ) ) ? $_POST['role'] : 'dra-undefined';
+		$role = ( isset( $_POST['role'] ) ) ? sanitize_key( wp_unslash( $_POST['role'] ) ) : 'dra-undefined';
 		if ( ! DRA_Helpers::is_valid_role( $role ) ) {
 			add_settings_error( 'DRA-notices', esc_attr( 'settings_updated' ), esc_html__( 'Invalid user role detected when processing form. No updates have been made.', 'disable-json-api' ), 'error' );
 
@@ -224,10 +258,10 @@ class Disable_REST_API {
 		$default_allow = ( isset( $_POST['default_allow'] ) && "1" == $_POST['default_allow'] ) ? true : false;
 
 		// Catch the routes that should be allowed
-		$rest_routes = ( isset( $_POST['rest_routes'] ) ) ? wp_unslash( $_POST['rest_routes'] ) : array();
+		$rest_routes = ( isset( $_POST['rest_routes'] ) && is_array( $_POST['rest_routes'] ) ) ? array_map( 'strval', wp_unslash( $_POST['rest_routes'] ) ) : array();
 
 		// Retrieve all current rules for all roles
-		$arr_option = get_option( 'disable_rest_api_options' );
+		$arr_option = $this->get_options();
 
 		// If resetting or allowlist is empty, clear the option and exit the function
 		if ( empty( $rest_routes ) || isset( $_POST['reset'] ) ) {
@@ -277,7 +311,7 @@ class Disable_REST_API {
 	 */
 	private function get_wp_error( $access ) {
 		$dra_error_message = apply_filters( 'dra_error_message', 'DRA: Only authenticated users can access the REST API.', $access );
-		$error_message     = esc_html__( $dra_error_message, 'disable-json-api' );
+		$error_message     = esc_html( $dra_error_message );
 
 		if ( is_wp_error( $access ) ) {
 			$access->add( 'rest_cannot_access', $error_message, array( 'status' => rest_authorization_required_code() ) );
